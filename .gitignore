@@ -1,0 +1,18 @@
+﻿# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+
+# IDE / OS
+.vs/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Flask / local data (uncomment to keep DB and uploads off GitHub)
+# instance/

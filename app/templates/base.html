@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accomplishment Report Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="sidebar-logo" src="{{ url_for('logo_file', filename='National ID.png') }}" alt="National ID logo">
+        <div class="brand-copy">
+          <h1>Accomplishment Dashboard</h1>
+          <p>Pure Python reporting workspace</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a>
+        <a href="{{ url_for('employees') }}" class="{{ 'active' if request.endpoint in ['employees', 'employee_form'] else '' }}">Employees</a>
+        <a href="{{ url_for('schedules') }}" class="{{ 'active' if request.endpoint in ['schedules', 'schedule_form'] else '' }}">Schedule</a>
+        <a href="{{ url_for('outputs') }}" class="{{ 'active' if request.endpoint in ['outputs', 'output_form'] else '' }}">Employee Output</a>
+        <a href="{{ url_for('city_records') }}" class="{{ 'active' if request.endpoint == 'city_records' else '' }}">City Municipality Record Per Month</a>
+        <a href="{{ url_for('signatories') }}" class="{{ 'active' if request.endpoint in ['signatories', 'signatory_form'] else '' }}">Signatory</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

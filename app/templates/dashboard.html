@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Dashboard</p>
+    <h2>Monthly accomplishment monitoring and report export</h2>
+    <p class="subtle">Import from Google sources, manage employee output, and export employee accomplishment reports with logo and signatories.</p>
+  </div>
+  <form method="get" class="month-filter compact-form">
+    <label for="start_date">Start Date</label>
+    <input id="start_date" type="date" name="start_date" value="{{ start_date }}">
+    <label for="end_date">End Date</label>
+    <input id="end_date" type="date" name="end_date" value="{{ end_date }}">
+    <button type="submit">Refresh</button>
+  </form>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card">
+    <span>Active Employees</span>
+    <strong>{{ active_employees }}</strong>
+  </article>
+  <article class="stat-card">
+    <span>Monthly Output Rows</span>
+    <strong>{{ outputs|length }}</strong>
+  </article>
+  <article class="stat-card">
+    <span>Total Quantity</span>
+    <strong>{{ total_quantity }}</strong>
+  </article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <div class="panel-head">
+      <h3>Google Sheet Import</h3>
+      <p>Use a CSV export URL from your Google Sheet.</p>
+    </div>
+    <form method="post" action="{{ url_for('import_google_sheet') }}" class="stack-form">
+      <input type="url" name="csv_url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing" required>
+      <button type="submit">Import Sheet Data</button>
+    </form>
+    <form method="post" action="{{ url_for('clear_imported_data') }}" class="stack-form" onsubmit="return confirm('Delete all Google Sheet imported rows from the database?');">
+      <input type="hidden" name="source_type" value="google_sheet">
+      <button type="submit">Clear Google Sheet Imported Data</button>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h3>Apps Script Import</h3>
+      <p>Works with GET or POST JSON endpoints.</p>
+    </div>
+    <form method="post" action="{{ url_for('import_apps_script') }}" class="stack-form">
+      <input type="url" name="script_url" placeholder="https://script.google.com/macros/s/.../exec" required>
+      <select name="method">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+      </select>
+      <textarea name="payload" rows="4" placeholder='{"action":"fetch"}'></textarea>
+      <button type="submit">Import Script Data</button>
+    </form>
+    <form method="post" action="{{ url_for('clear_imported_data') }}" class="stack-form" onsubmit="return confirm('Delete all Apps Script imported rows from the database?');">
+      <input type="hidden" name="source_type" value="apps_script">
+      <button type="submit">Clear Apps Script Imported Data</button>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h3>Report Branding</h3>
+      <p>Upload the logo used in printed/exported reports.</p>
+    </div>
+    <form method="post" action="{{ url_for('upload_logo') }}" enctype="multipart/form-data" class="stack-form">
+      <input type="file" name="logo" accept=".png,.jpg,.jpeg" required>
+      <button type="submit">Upload Logo</button>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h3>Report Settings</h3>
+      <p>Update organization and title shown in the PDF header.</p>
+    </div>
+    <form method="post" action="{{ url_for('save_settings') }}" class="stack-form">
+      <input type="text" name="organization_name" value="{{ app_settings.get('organization_name', '') }}" placeholder="Organization name">
+      <input type="text" name="report_title" value="{{ app_settings.get('report_title', '') }}" placeholder="Report title">
+      <button type="submit">Save Settings</button>
+    </form>
+  </article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <div class="panel-head">
+      <h3>Export Employee Reports</h3>
+      <p>Generate an accomplishment report for all employees by month and category.</p>
+    </div>
+    <form method="get" action="{{ url_for('export_all_reports') }}" class="stack-form">
+      <input type="date" name="start_date" value="{{ start_date }}" required>
+      <input type="date" name="end_date" value="{{ end_date }}" required>
+      <select name="category">
+        <option value="registration">Registration</option>
+        <option value="delivery">Delivery</option>
+      </select>
+      <button type="submit">Export All Employees</button>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head">
+      <h3>City / Municipality Snapshot</h3>
+      <p>Monthly totals grouped by city and category.</p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>City / Municipality</th>
+          <th>Category</th>
+          <th>Employees</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in city_rows %}
+        <tr>
+          <td>{{ row["city_municipality"] }}</td>
+          <td>{{ row["category_key"].title() }}</td>
+          <td>{{ row["employees"] }}</td>
+          <td>{{ row["total_quantity"] }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No records found for {{ month }}.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}
