@@ -57,7 +57,6 @@ Desktop.ini
 if (-not (Test-Path (Join-Path $ProjectRoot ".git"))) {
     Write-Host "Initializing git repository..."
     git init
-    git branch -M $Branch
 }
 
 $remotes = @(git remote 2>$null)
@@ -78,6 +77,13 @@ if ($status.Count -eq 0) {
 } else {
     Write-Host "Committing: $CommitMessage"
     git commit -m $CommitMessage
+}
+
+# First commit often lands on "master"; rename before push so refspec matches.
+git rev-parse HEAD 2>$null | Out-Null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Ensuring branch name is $Branch ..."
+    git branch -M $Branch
 }
 
 Write-Host "Pushing to $RemoteName $Branch ..."
