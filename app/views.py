@@ -75,6 +75,10 @@ CITY_MUNICIPALITIES = [
 
 
 def register_routes(app):
+    @app.get("/health")
+    def health_check():
+        return {"status": "ok"}, 200
+
     @app.context_processor
     def inject_settings():
         return {
@@ -105,22 +109,26 @@ def register_routes(app):
 
     @app.route("/")
     def dashboard():
-        start_date, end_date = _resolve_date_filter()
-        outputs = list_outputs({"start_date": start_date, "end_date": end_date})
-        employees = list_employees()
-        total_quantity = sum(row["quantity"] for row in outputs)
-        active_employees = sum(1 for row in employees if row["active"])
-        city_rows = monthly_city_records(start_date[:7])
-        return render_template(
-            "dashboard.html",
-            month=start_date[:7],
-            start_date=start_date,
-            end_date=end_date,
-            outputs=outputs,
-            active_employees=active_employees,
-            total_quantity=total_quantity,
-            city_rows=city_rows,
-        )
+        try:
+            start_date, end_date = _resolve_date_filter()
+            outputs = list_outputs({"start_date": start_date, "end_date": end_date})
+            employees = list_employees()
+            total_quantity = sum(row["quantity"] for row in outputs)
+            active_employees = sum(1 for row in employees if row["active"])
+            city_rows = monthly_city_records(start_date[:7])
+            return render_template(
+                "dashboard.html",
+                month=start_date[:7],
+                start_date=start_date,
+                end_date=end_date,
+                outputs=outputs,
+                active_employees=active_employees,
+                total_quantity=total_quantity,
+                city_rows=city_rows,
+            )
+        except Exception as e:
+            from flask import jsonify
+            return jsonify({"error": str(e)}), 500
 
     @app.route("/employees")
     def employees():
